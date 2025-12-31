@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Python 实时聊天室</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        #chat-box { width: 400px; height: 300px; border: 1px solid #ccc; overflow-y: scroll; margin-bottom: 10px; padding: 10px; }
+        .message { margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <h2>简易聊天室</h2>
+    <div id="chat-box"></div>
+    <input type="text" id="username" placeholder="你的名字">
+    <input type="text" id="message" placeholder="输入消息...">
+    <button onclick="sendMessage()">发送</button>
+
+    <script>
+        // 1. 连接服务器
+        var socket = io();
+
+        // 2. 监听服务器发来的 'receive_message' 事件
+        socket.on('receive_message', function(data) {
+            var chatBox = document.getElementById('chat-box');
+            var newMessage = document.createElement('div');
+            newMessage.className = 'message';
+            newMessage.innerHTML = `<strong>${data.user}:</strong> ${data.msg}`;
+            chatBox.appendChild(newMessage);
+            // 自动滚动到底部
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+        // 3. 发送消息函数
+        function sendMessage() {
+            var user = document.getElementById('username').value || "匿名者";
+            var msg = document.getElementById('message').value;
+            if (msg) {
+                // 向服务器发送 'send_message' 事件
+                socket.emit('send_message', {user: user, msg: msg});
+                document.getElementById('message').value = ''; // 清空输入框
+            }
+        }
+    </script>
+</body>
+</html>
